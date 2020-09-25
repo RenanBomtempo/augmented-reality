@@ -69,7 +69,6 @@ def idleCallback():
     
     
 if __name__ == '__main__':
-    
     dimensions = (640, 480)
     glutInit()
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE)
