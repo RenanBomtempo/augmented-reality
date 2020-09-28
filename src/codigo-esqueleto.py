@@ -8,7 +8,7 @@ from OpenGL.GLU import *
 
 from PIL import Image
 
-#from opencvYAMLLoading import *
+#from opencvYAMLLoading import * 
 
 from objloader import *
  
@@ -42,9 +42,8 @@ def object3D(obj):
     glCallList(obj.gl_list)
 
     # renderiza um cubo
-    # glutWireCube(2.0)
+    glutWireCube(2.0)
 
-    
 def displayCallback():
 
     glMatrixMode(GL_MODELVIEW)

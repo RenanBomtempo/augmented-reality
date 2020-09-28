@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
 import pygame
 from OpenGL.GL import *
- 
+
 def MTL(filename):
     contents = {}
     mtl = None
@@ -28,9 +27,9 @@ def MTL(filename):
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ix, iy, 0, GL_RGBA,
                 GL_UNSIGNED_BYTE, image)
         else:
-            mtl[values[0]] = map(float, values[1:])
+            mtl[values[0]] = list(map(float, values[1:]))
     return contents
- 
+
 class OBJ:
     def __init__(self, filename, swapyz=False):
         """Loads a Wavefront OBJ file. """
@@ -38,24 +37,24 @@ class OBJ:
         self.normals = []
         self.texcoords = []
         self.faces = []
- 
+
         material = None
         for line in open(filename, "r"):
             if line.startswith('#'): continue
             values = line.split()
             if not values: continue
             if values[0] == 'v':
-                v = map(float, values[1:4])
+                v = list(map(float, values[1:4]))
                 if swapyz:
                     v = v[0], v[2], v[1]
                 self.vertices.append(v)
             elif values[0] == 'vn':
-                v = map(float, values[1:4])
+                v = list(map(float, values[1:4]))
                 if swapyz:
                     v = v[0], v[2], v[1]
                 self.normals.append(v)
             elif values[0] == 'vt':
-                self.texcoords.append(map(float, values[1:3]))
+                self.texcoords.append(list(map(float, values[1:3])))
             elif values[0] in ('usemtl', 'usemat'):
                 material = values[1]
             elif values[0] == 'mtllib':
@@ -76,14 +75,14 @@ class OBJ:
                     else:
                         norms.append(0)
                 self.faces.append((face, norms, texcoords, material))
- 
+
         self.gl_list = glGenLists(1)
         glNewList(self.gl_list, GL_COMPILE)
-        #glEnable(GL_TEXTURE_2D)
+        glEnable(GL_TEXTURE_2D)
         glFrontFace(GL_CCW)
         for face in self.faces:
             vertices, normals, texture_coords, material = face
- 
+
             mtl = self.mtl[material]
             if 'texture_Kd' in mtl:
                 # use diffuse texmap
@@ -91,7 +90,7 @@ class OBJ:
             else:
                 # just use diffuse colour
                 glColor(*mtl['Kd'])
- 
+
             glBegin(GL_POLYGON)
             for i in range(len(vertices)):
                 if normals[i] > 0:
@@ -100,5 +99,5 @@ class OBJ:
                     glTexCoord2fv(self.texcoords[texture_coords[i] - 1])
                 glVertex3fv(self.vertices[vertices[i] - 1])
             glEnd()
-        #glDisable(GL_TEXTURE_2D)
+        glDisable(GL_TEXTURE_2D)
         glEndList()
