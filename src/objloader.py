@@ -12,7 +12,7 @@ def MTL(filename):
         if values[0] == 'newmtl':
             mtl = contents[values[1]] = {}
         elif mtl is None:
-            raise ValueError, "mtl file doesn't start with newmtl stmt"
+            raise ValueError("mtl file doesn't start with newmtl stmt")
         elif values[0] == 'map_Kd':
             # load the texture referred to by this declaration
             mtl[values[0]] = values[1]

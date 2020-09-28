@@ -8,7 +8,7 @@ from OpenGL.GLU import *
 
 from PIL import Image
 
-from opencvYAMLLoading import * 
+#from opencvYAMLLoading import *
 
 from objloader import *
  
