@@ -53,7 +53,7 @@ def trackerOrient(img, alvo, points,frame):
 
     # No vetor de pontos os poontos estão em sentido anti-horario, mas enumerei
     # As possiveis rotções no sentido horario, então esse order inverte isso
-    # order = [points[0][0], points[3][0], points[2][0], points[1][0]]
+    #order = [points[0][0], points[3][0], points[2][0], points[1][0]]
     orderAnti = [0,3,2,1]
     orient = orderAnti[orient]
     # Origem

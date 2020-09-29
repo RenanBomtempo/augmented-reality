@@ -26,7 +26,7 @@ def initOpenGL(focal_len, dimensions):
 
     fx = camera_matrix[0,0]
     fy = camera_matrix[1,1]
-    fovy = 45
+    fovy = 2*np.arctan(0.5*height/fy)*180/np.pi
     aspect = (width*fy)/(height*fx)
     gluPerspective(fovy, aspect, 0.1, 100.0)
 
@@ -40,10 +40,12 @@ Posiciona um objeto 3D em cima do alvo detectado na cena.
 '''
 def object3D(img_pts, orient, camera_matrix, dist_coef, obj):
     world_pts = np.array([[-1, -1, 1], [ 1, -1, 1],
-                          [ 1,  1, 1], [-1,  1, 1]], dtype="float32")
+                          [1,  1, 1], [-1,  1, 1]], dtype="float32")
 
-    world_pts = np.roll(world_pts, orient)
+    world_pts = np.roll(world_pts, -orient)
+    #img_pts = np.array([img_pts[0][0], img_pts[1][0], img_pts[2][0], img_pts[3][0]], dtype="float32")
     img_pts = np.array(img_pts, dtype="float32")
+    print(world_pts, img_pts)
 
     # Calcular matrix de projeção
     _, rot_vecs, t_vecs = cv2.solvePnP(world_pts, img_pts, camera_matrix, dist_coef)
@@ -55,10 +57,10 @@ def object3D(img_pts, orient, camera_matrix, dist_coef, obj):
                             [        0.0,         0.0,         0.0,      1.0]])
 
 	# Mudança de sistema de coordenadas (OpenCV -> OpenGL)
-    flip_yz = np.array([[1, 0,  0, 0],
-		                [0, 1,  0, 0],
-		                [0, 0, -1, 0],
-		                [0, 0,  0, 1]])
+    flip_yz = np.array([[1,  0,  0, 0],
+		                [0, -1,  0, 0],
+		                [0,  0, -1, 0],
+		                [0,  0,  0, 1]])
 
     proj_matrix = np.dot(flip_yz, proj_matrix)
     glLoadMatrixd(np.transpose(proj_matrix))
@@ -132,13 +134,13 @@ def displayCallback():
         for alvo in alvos:
             # Posiciona o modelo 3D em cima do alvo
             object3D(alvo[0], alvo[1], camera_matrix, dist_coef, obj) 
-            glutSwapBuffers()     
+        glutSwapBuffers()     
 
 if __name__ == '__main__':
     # Intrinsic paremeters from camera calibration
     focal_len = (1295.66495, 1280.53452)
     princ_pt  = ( 915.60124,  478.74546)
-    dist_coef = np.array([1.3, 7.7, 0., 0., 1.5])
+    dist_coef = np.array([0.06646, 0.27952, -0.00221, -0.00802, 0.00000])
 
     # Camera matrix
     camera_matrix = np.array([[focal_len[0], 0., princ_pt[0]],
@@ -149,7 +151,7 @@ if __name__ == '__main__':
     vid = cv2.VideoCapture('tp2-icv-input.mp4')
 
     # Viewport dimensions
-    dimensions = (640, 480)
+    dimensions = (1920, 1080)
 
     # GLUT configuration
     glutInit()
