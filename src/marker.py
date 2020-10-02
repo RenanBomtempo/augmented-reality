@@ -71,7 +71,7 @@ def trackerOrient(img, alvo, points,frame):
 
     aux += 1
 
-def detect_markers(img):
+def detectMarkers(img):
     # assumindo que o alvo é quadrado
     alvo = cv2.imread('alvo.jpg')
     alvo = cv2.resize(alvo,(322,322),interpolation = cv2.INTER_AREA)
@@ -144,7 +144,7 @@ def MakeVideo(videoIn,alvo):
     while(videoIn.isOpened()):
         ret, frame = videoIn.read()
         if ret==True:
-            _, frame = detect_markers(frame)
+            _, frame = detectMarkers(frame)
 
             out.write(frame)
         else:
@@ -163,7 +163,7 @@ if __name__ == '__main__':
     alvo = cv2.resize(alvo,(322,322),interpolation = cv2.INTER_AREA)
 
     ret, frame = videoIn.read()
-    _, frame = detect_markers(frame)
+    _, frame = detectMarkers(frame)
 
     MakeVideo(videoIn,alvo)
 
