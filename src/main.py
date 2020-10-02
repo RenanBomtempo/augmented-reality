@@ -16,21 +16,24 @@ Inicialização dos parâmetros da OpenGL.
 '''
 def initOpenGL(focal_len, dimensions):
     (width, height) = dimensions
-     
+
     glClearColor(0.0, 0.0, 0.0, 0.0)
     glClearDepth(1.0)
     glEnable(GL_DEPTH_TEST)
-    
+
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
 
     fx = camera_matrix[0,0]
     fy = camera_matrix[1,1]
+
     fovy = 2*np.arctan(0.5*height/fy)*180/np.pi
     aspect = (width*fy)/(height*fx)
-    gluPerspective(fovy, aspect, 0.1, 100.0)
+    gluPerspective(fovy, aspect, 0.01, 200.0)
 
     glMatrixMode(GL_MODELVIEW)
+
+
 
 def idleCallback():
     glutPostRedisplay()
@@ -39,22 +42,23 @@ def idleCallback():
 Posiciona um objeto 3D em cima do alvo detectado na cena.
 '''
 def object3D(img_pts, orient, camera_matrix, dist_coef, obj):
-    world_pts = np.array([[-1, -1, 1], [ 1, -1, 1],
-                          [1,  1, 1], [-1,  1, 1]], dtype="float32")
 
-    world_pts = np.roll(world_pts, -orient)
-    #img_pts = np.array([img_pts[0][0], img_pts[1][0], img_pts[2][0], img_pts[3][0]], dtype="float32")
+    z = 0
+    world_pts = np.array([[-1, -1, z], [1, -1, z],
+                          [1, 1, z], [-1, 1, z]], dtype="float32")
+
+
     img_pts = np.array(img_pts, dtype="float32")
-    print(world_pts, img_pts)
 
     # Calcular matrix de projeção
     _, rot_vecs, t_vecs = cv2.solvePnP(world_pts, img_pts, camera_matrix, dist_coef)
     rot_m = cv2.Rodrigues(rot_vecs)[0]
 
-    proj_matrix = np.array([[rot_m[0][0], rot_m[0][1], rot_m[0][2], t_vecs[0]], 
-                            [rot_m[1][0], rot_m[1][1], rot_m[1][2], t_vecs[1]], 
+
+    proj_matrix = np.array([[rot_m[0][0], rot_m[0][1], rot_m[0][2], t_vecs[0]],
+                            [rot_m[1][0], rot_m[1][1], rot_m[1][2], t_vecs[1]],
                             [rot_m[2][0], rot_m[2][1], rot_m[2][2], t_vecs[2]],
-                            [        0.0,         0.0,         0.0,      1.0]])
+                            [        0.0,         0.0,         0.0,      1.0]],dtype="float32")
 
 	# Mudança de sistema de coordenadas (OpenCV -> OpenGL)
     flip_yz = np.array([[1,  0,  0, 0],
@@ -87,7 +91,7 @@ def displayCallback():
         background = cv2.flip(background, 0)
 
         height, width, channels = background.shape
-        background = np.frombuffer(background.tostring(), dtype=background.dtype, count=height * width * channels)
+        background = np.frombuffer(background.tobytes(), dtype=background.dtype, count=height * width * channels)
         background.shape = (height, width, channels)
 
         glEnable(GL_TEXTURE_2D)
@@ -133,19 +137,26 @@ def displayCallback():
 
         for alvo in alvos:
             # Posiciona o modelo 3D em cima do alvo
-            object3D(alvo[0], alvo[1], camera_matrix, dist_coef, obj) 
+            object3D(alvo[0], alvo[1], camera_matrix, dist_coef, obj)
         glutSwapBuffers()     
 
 if __name__ == '__main__':
     # Intrinsic paremeters from camera calibration
-    focal_len = (1295.66495, 1280.53452)
-    princ_pt  = ( 915.60124,  478.74546)
-    dist_coef = np.array([0.06646, 0.27952, -0.00221, -0.00802, 0.00000])
+    focal_len = (1203.33680, 1205.25410)
+    princ_pt  = (959.50000,  539.50000)
+    dist_coef = np.array([0.07433, -0.17385, -0.00486,  0.00222, 0.00000],dtype="float32")
+
 
     # Camera matrix
     camera_matrix = np.array([[focal_len[0], 0., princ_pt[0]],
 		                      [0.,  focal_len[1], princ_pt[1]], 
-                              [0., 0., 1.]])
+                              [0., 0., 1.]],dtype="float32")
+
+    # # -----------Matriz do professor------------------------------
+    # cameraMatrix = np.array([[1232.95030, 0., 932.47503],
+    #                          [0, 1225.84345, 505.11582], [0., 0., 1.]],dtype="double")  ##intrinsicDict["c...?"]
+    # distCoeffs = np.array([1.3, 7.7, 0., 0., 1.5],dtype="double")  # intrinsicDict['distortion_coefficients']
+    # # ------------------------------------------------------------
 
     # Open input video
     vid = cv2.VideoCapture('tp2-icv-input.mp4')
@@ -161,9 +172,10 @@ if __name__ == '__main__':
     window = glutCreateWindow(b'Realidade Aumentada')
 
     # OpenGL intialization
+
     initOpenGL(focal_len, dimensions)
 
-    obj = OBJ("Pikachu.obj", swapyz=True)   
+    obj = OBJ("Pikachu.obj", swapyz=True)
     # Background
     background_id = glGenTextures(1)
 

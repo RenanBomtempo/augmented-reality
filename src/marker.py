@@ -27,7 +27,7 @@ def trackerOrient(img, alvo, points,frame):
 
     palvo = np.ones(alvo.shape)
     palvoPoints = np.array([[0,0],[0,alvo.shape[1]],
-                            [alvo.shape[0],alvo.shape[1]],[alvo.shape[0],0]], dtype="float32")
+                            [alvo.shape[0],alvo.shape[1]],[alvo.shape[0],0]], dtype="float64")
 
     h, status = cv2.findHomography(points, palvoPoints)
     palvo = cv2.warpPerspective(img, h, (palvo.shape[0], palvo.shape[1]))
@@ -40,8 +40,9 @@ def trackerOrient(img, alvo, points,frame):
     alvo2 = cv2.rotate(alvo1, cv2.ROTATE_90_CLOCKWISE)
     alvo3 = cv2.rotate(alvo2, cv2.ROTATE_90_CLOCKWISE)
 
+
     alvos = [alvo0,alvo1,alvo2,alvo3]
-    indices = np.arange(4)
+
     # Verificando qual orientação produz o menor erro quadratico
     orient = -1
     minErr = 999
@@ -53,9 +54,9 @@ def trackerOrient(img, alvo, points,frame):
 
     # No vetor de pontos os poontos estão em sentido anti-horario, mas enumerei
     # As possiveis rotções no sentido horario, então esse order inverte isso
-    #order = [points[0][0], points[3][0], points[2][0], points[1][0]]
     orderAnti = [0,3,2,1]
     orient = orderAnti[orient]
+
     # Origem
     if orient>=0:
         #origem = order[orient]
@@ -63,21 +64,11 @@ def trackerOrient(img, alvo, points,frame):
 
     return False,(0,0)
     #--------------------------------------------------------------------------
-    # print("possivel alvo", aux, end='')
-    # palvo = cv2.cvtColor(palvo,cv2.COLOR_GRAY2RGB)
-
-    # order2 = [palvoPoints[0], palvoPoints[3], palvoPoints[2], palvoPoints[1]]
-    # palvo = cv2.circle(palvo, tuple(order2[orient]), 40, (255,0,0), -1)
-
     # Marcar na imagem qual a origem estimada
     # order = [points[0][0],points[3][0],points[2][0],points[1][0]]
     # frame = cv2.circle(frame, tuple(order[orient]), 10, (255,0,0), -1)
 
-    # cv2.imshow('Possivel Alvo' + str(aux), palvo)
-    # cv2.imshow('alvo0', alvo0)
-    # cv2.imshow('alvo1', alvo1)
-    # cv2.imshow('alvo2', alvo2)
-    # cv2.imshow('alvo3', alvo3)
+
     aux += 1
 
 def detect_markers(img):
@@ -118,8 +109,14 @@ def detect_markers(img):
                 origem = approx[indice_origem][0]
                 eixox = [origem, approx[(indice_origem+1)%4][0]]
                 eixoy = [origem, approx[(indice_origem-1)%4][0]]
-                
-                markers.append((approx, indice_origem))
+
+                approx_fixed = []
+                for i in range(4):
+                    approx_fixed.append([approx[(indice_origem+i)%4][0][0],approx[(indice_origem+i)%4][0][1]])
+
+
+                # markers.append((approx, indice_origem))
+                markers.append((approx_fixed, indice_origem))
                 
                 # Desenhar na exixos na tela
                 cv2.drawContours(img, [approx], 0, (0, 255, 0), 1)
@@ -135,7 +132,7 @@ def detect_markers(img):
                 
         # Desenhar todos os contornos
         #cv2.drawContours(img, [approx], 0, (0, 0, 255), 1)
-    print("Detected :",numTrakers)
+    # print("Detected :",numTrakers)
     return markers, img
 
 def MakeVideo(videoIn,alvo):

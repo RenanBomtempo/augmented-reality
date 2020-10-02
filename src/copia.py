@@ -60,7 +60,7 @@ def object3D(rect, indices, cameraMatrix, distCoeffs, obj):
 
 	##opencv coordinate system to opengl coordinate system
 	flip_y_and_z_axis = np.array([[1, 0,  0, 0],
-		                          [0, 1,  0, 0],
+		                          [0, -1,  0, 0],
 		                          [0, 0, -1, 0],
 		                          [0, 0,  0, 1]])
 	m = np.dot(flip_y_and_z_axis, m)
